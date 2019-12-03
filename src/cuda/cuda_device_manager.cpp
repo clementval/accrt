@@ -1,4 +1,4 @@
-#include "cuda/device_manager.h"
+#include "cuda/cuda_device_manager.h"
 
 #include <cuda.h>
 #include <iostream>
@@ -102,7 +102,7 @@ void print_cuda_error(CUresult cuResult) {
 /**
  * 
  */
-int DeviceManager::get_num_devices() {
+int CudaDeviceManager::get_num_devices() {
   int deviceCount = 0;
   CUresult cuResult = cuDeviceGetCount(&deviceCount);
   if(cuResult != CUDA_SUCCESS) {
@@ -114,7 +114,7 @@ int DeviceManager::get_num_devices() {
 /**
  * 
  */
-void DeviceManager::init() {
+void CudaDeviceManager::init() {
   CUresult cuResult = cuInit(0);
 
   int major = 0, minor = 0;
@@ -162,14 +162,14 @@ void DeviceManager::init() {
 /**
  * 
  */
-void DeviceManager::destroy() {
+void CudaDeviceManager::destroy() {
   cuCtxDestroy(context_);
 }
 
 /**
  *
  */
-void* DeviceManager::allocate(void* hostPtr, size_t size) {
+void* CudaDeviceManager::allocate(void* hostPtr, size_t size) {
   void* devPtr;
   CUresult cuResult = CUDA_SUCCESS;
   CUdeviceptr cuPtr;
@@ -182,25 +182,29 @@ void* DeviceManager::allocate(void* hostPtr, size_t size) {
   } else {
     std::cerr << "[ERROR] Cannot allocate on device" << std::endl;
     print_cuda_error(cuResult);
-    // dump_present_table();
     exit(1);
   }
   return NULL;
 }
 
-void DeviceManager::free(void* hostPtr) {
+/**
+ *
+ */
+void CudaDeviceManager::free(void* hostPtr) {
   CUresult cuResult = CUDA_SUCCESS;
   cuResult = cuMemFree(presentTable_[hostPtr].cuPtr);
   if (cuResult != CUDA_SUCCESS) {
     std::cerr << "[ERROR] Cannot free CUDA memory" << std::endl;
     print_cuda_error(cuResult);
-    // dump_present_table();
     exit(1);
   }
   presentTable_.erase(hostPtr);
 }
 
-void DeviceManager::memcpy(void* hostPtr, size_t len, DataMovementDirection direction) {
+/**
+ *
+ */
+void CudaDeviceManager::memcpy(void* hostPtr, size_t len, DataMovementDirection direction) {
   CUresult cuResult = CUDA_SUCCESS;
   
   if(direction == HOST_TO_DEVICE) {
@@ -210,31 +214,37 @@ void DeviceManager::memcpy(void* hostPtr, size_t len, DataMovementDirection dire
   }
   
   if (cuResult != CUDA_SUCCESS) {
-      // std::cerr << "[ERROR] updating device memory - " << 
-      //     print_alloc_info(std::cerr, &present_[hostPtr]) << std::endl;
+    std::cerr << "[ERROR] updating device memory - " << 
+          print_alloc_info(std::cerr, &present_[hostPtr]) << std::endl;
     print_cuda_error(cuResult);
     exit(1);
   }
 }
 
-int DeviceManager::is_present(void* hostPtr, size_t len) {
+/**
+ *
+ */
+int CudaDeviceManager::is_present(void* hostPtr, size_t len) {
   if (presentTable_.size() > 0 && presentTable_.find(hostPtr) != presentTable_.end()) {
     return 1; // TODO check for len
   }
   return 0;
 }
 
-
 /**
+ *
  */
-void DeviceManager::dump_present_table() {
+void CudaDeviceManager::dump_present_table() {
   std::cout << "Present table dump: (" << presentTable_.size() << ")" << std::endl;
   for (auto const &e : presentTable_) {
     std::cout << print_alloc_info(std::cout, &e.second) << std::endl;
   }
 }
 
-void* DeviceManager::get_device_ptr(void* hostPtr) {
+/**
+ *
+ */
+void* CudaDeviceManager::get_device_ptr(void* hostPtr) {
   if (presentTable_.find(hostPtr) != presentTable_.end()) {
     return presentTable_[hostPtr].devPtr;
   }

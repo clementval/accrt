@@ -4,14 +4,19 @@
 
 
 #include "openacc.h"
-#include "cuda/device_manager.h"
+#include "device_manager.h"
+#include "cuda/cuda_device_manager.h"
 #include "oaru.h"
 
 // Global variables
-DeviceManager devMgt_;
+CudaDeviceManager devMgt_;
 
 int acc_get_num_devices(acc_device_t acc_get_device_type) {
   return devMgt_.get_num_devices();
+}
+
+acc_device_t acc_get_device_type() {
+  return devMgt_.get_device_type();
 }
 
 void acc_init(acc_device_t devicetype) {
@@ -29,7 +34,6 @@ d_void *acc_create(h_void* hostPtr, size_t size) {
     return devMgt_.get_device_ptr(hostPtr);
   }
   return NULL;
-  
 }
 
 void acc_delete(h_void *hostPtr, size_t len) {

@@ -12,6 +12,12 @@ int main() {
   }
 
   acc_init(acc_device_default);
+
+  int cudaDevice = acc_get_num_devices(acc_device_nvidia);
+  assert(cudaDevice >= 1);
+
+  assert(acc_get_device_type() == acc_device_nvidia);
+
   assert(acc_is_present(a, sizeof(float)*N) == 0);
   d_void* a_dptr = acc_create(a, sizeof(float)*N);
   assert(acc_is_present(a, sizeof(float)*N) == 1);
