@@ -4,22 +4,21 @@ project(accrt LANGUAGES CUDA C CXX)
 
 find_package(CUDA 10.0 REQUIRED)
 
-add_library(accrt
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+add_library(openacc
   src/openacc.cpp
+  src/cuda/cuda_helper.cpp
 )
 
+set(OPENACC_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
+
 target_include_directories(
-  accrt
+  openacc
   PRIVATE
-  include
+  ${OPENACC_INCLUDE_DIR}
   ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}
 )
 
-add_executable(basic
-  test/basic.cpp)
-
-target_link_libraries(basic accrt cuda)
-target_include_directories(basic
-  PRIVATE
-  include
-)
+add_subdirectory(test)
