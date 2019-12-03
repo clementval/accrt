@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.10)
 
-project(accrt LANGUAGES CUDA C CXX)
+project(oaru LANGUAGES CUDA C CXX)
 
 find_package(CUDA 10.0 REQUIRED)
 
