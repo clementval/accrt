@@ -8,3 +8,5 @@ target_include_directories(basic
   PRIVATE
   ${OPENACC_INCLUDE_DIR}
 )
+
+add_test(openacc_rt_basic basic)

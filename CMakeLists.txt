@@ -9,7 +9,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_library(openacc
   src/openacc.cpp
-  src/cuda/cuda_helper.cpp
+  src/cuda/device_manager.cpp
 )
 
 set(OPENACC_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
@@ -21,4 +21,5 @@ target_include_directories(
   ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}
 )
 
+enable_testing()
 add_subdirectory(test)
