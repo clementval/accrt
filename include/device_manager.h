@@ -4,16 +4,8 @@
 
 #include <map>
 #include "openacc.h"
+#include "alloc_info.h"
 #include <cuda.h>
-
-typedef struct alloc_info {
-  void* hostPtr;
-  void* devPtr;
-  CUdeviceptr cuPtr;
-  size_t size;
-} AllocInfo;
-
-typedef std::map<const void *, AllocInfo> PresentTable;
 
 enum DataMovementDirection {
     HOST_TO_DEVICE = 0,
@@ -24,7 +16,6 @@ enum DataMovementDirection {
 
 class DeviceManager {
 protected:
-    PresentTable presentTable_;
     acc_device_t currentDeviceType_;
 
     void dump_present_table();

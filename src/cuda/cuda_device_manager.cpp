@@ -3,11 +3,6 @@
 #include <cuda.h>
 #include <iostream>
 
-std::ostream& print_alloc_info(std::ostream& os, const AllocInfo* info) {
-  return os << " h:" << info->hostPtr << " d:" << info->devPtr << 
-      " size:" << info->size;
-}
-
 void print_cuda_error(CUresult cuResult) {
   switch(cuResult) {
     case CUDA_SUCCESS: 
@@ -176,7 +171,7 @@ void* CudaDeviceManager::allocate(void* hostPtr, size_t size) {
   cuResult = cuMemAlloc(&cuPtr, size);
   if (cuResult == CUDA_SUCCESS) {
     devPtr = (void*) (uintptr_t) cuPtr;
-    AllocInfo crt = { hostPtr, devPtr, cuPtr, size };
+    CudaAllocInfo crt = {{hostPtr, devPtr, size}, cuPtr};
     presentTable_[hostPtr] = crt;
     return devPtr;
   } else {
@@ -214,8 +209,6 @@ void CudaDeviceManager::memcpy(void* hostPtr, size_t len, DataMovementDirection 
   }
   
   if (cuResult != CUDA_SUCCESS) {
-    std::cerr << "[ERROR] updating device memory - " << 
-          print_alloc_info(std::cerr, &present_[hostPtr]) << std::endl;
     print_cuda_error(cuResult);
     exit(1);
   }
@@ -237,16 +230,18 @@ int CudaDeviceManager::is_present(void* hostPtr, size_t len) {
 void CudaDeviceManager::dump_present_table() {
   std::cout << "Present table dump: (" << presentTable_.size() << ")" << std::endl;
   for (auto const &e : presentTable_) {
-    std::cout << print_alloc_info(std::cout, &e.second) << std::endl;
+    std::cout << " h:" << e.second.allocInfo.hostPtr << " d:" 
+        << e.second.allocInfo.devPtr << " size:" 
+        << e.second.allocInfo.size << std::endl;
   }
 }
 
 /**
- *
+ * 
  */
 void* CudaDeviceManager::get_device_ptr(void* hostPtr) {
   if (presentTable_.find(hostPtr) != presentTable_.end()) {
-    return presentTable_[hostPtr].devPtr;
+    return presentTable_[hostPtr].allocInfo.devPtr;
   }
   return NULL;
 }

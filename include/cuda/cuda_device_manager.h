@@ -4,11 +4,15 @@
 
 #include <cuda.h>
 #include "device_manager.h"
+#include "cuda/cuda_alloc_info.h"
 
 void print_cuda_error(CUresult cuResult);
 
+typedef std::map<const void *, CudaAllocInfo> PresentTable;
+
 class CudaDeviceManager : public DeviceManager {
 private:
+    PresentTable presentTable_;
     CUdevice device_;
     CUcontext context_;
 
