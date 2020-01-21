@@ -2,7 +2,6 @@
 #include <iostream>
 #include <cstddef>
 
-
 #include "openacc.h"
 #include "device_manager.h"
 #include "cuda/cuda_device_manager.h"
@@ -15,17 +14,13 @@ int acc_get_num_devices(acc_device_t acc_get_device_type) {
   return devMgt_.get_num_devices();
 }
 
-acc_device_t acc_get_device_type() {
-  return devMgt_.get_device_type();
-}
+acc_device_t acc_get_device_type() { return devMgt_.get_device_type(); }
 
-void acc_init(acc_device_t devicetype) {
-  devMgt_.init(); 
-}
+void acc_init(acc_device_t devicetype) { devMgt_.init(); }
 
 void acc_shutdown(acc_device_t devicetype) { devMgt_.destroy(); }
 
-d_void *acc_create(h_void* hostPtr, size_t size) {
+d_void *acc_create(h_void *hostPtr, size_t size) {
   void *devPtr;
   if (devMgt_.is_present(hostPtr, size) == 0) {
     return devMgt_.allocate(hostPtr, size);
