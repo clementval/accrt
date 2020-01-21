@@ -199,7 +199,9 @@ void CudaDeviceManager::free(void* hostPtr) {
 /**
  *
  */
-void CudaDeviceManager::memcpy(void* hostPtr, size_t len, DataMovementDirection direction) {
+void CudaDeviceManager::memcpy(void* hostPtr, size_t len, 
+                               DataMovementDirection direction) 
+{
   CUresult cuResult = CUDA_SUCCESS;
   
   if(direction == HOST_TO_DEVICE) {
