@@ -10,12 +10,9 @@ typedef enum {
   DEBUG_LEVEL_HIGH = 3
 } DebugLevel;
 
-
 DebugLevel readCrtDebugLevel();
-void debug(const DebugLevel level, const char* msg);
+void debug(const DebugLevel level, const char *msg);
 
 } // end namespace oaru
-
-
 
 #endif // OARU_H_

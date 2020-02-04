@@ -4,8 +4,8 @@
 #include <cstddef>
 
 typedef struct AllocInfo {
-  void* hostPtr;
-  void* devPtr;
+  void *hostPtr;
+  void *devPtr;
   size_t size;
 } AllocInfo;
 
