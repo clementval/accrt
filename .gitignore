@@ -32,7 +32,11 @@
 *.app
 
 # Build
-build/**
+build
 
 # vscode
 .vscode
+
+# build
+ 
+
