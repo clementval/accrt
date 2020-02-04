@@ -1,4 +1,5 @@
 #include <cassert>
+#include <iostream>
 #include "openacc.h"
 
 #define N 10
@@ -17,6 +18,15 @@ int main() {
   assert(cudaDevice >= 1);
 
   assert(acc_get_device_type() == acc_device_nvidia);
+
+  assert(acc_get_property(0, acc_device_nvidia, acc_property_memory) > 0);
+  assert(acc_get_property(0, acc_device_nvidia, acc_property_free_memory) > 0);
+  assert(acc_get_property(0, acc_device_nvidia, 
+                          acc_property_shared_memory_support) > 0);
+
+  std::cout << "NAME:" << acc_get_property_string(0, acc_device_nvidia, acc_property_name) << std::endl;
+  std::cout << acc_get_property_string(0, acc_device_nvidia, acc_property_vendor) << std::endl;
+  std::cout << acc_get_property_string(0, acc_device_nvidia, acc_property_driver) << std::endl;
 
   assert(acc_is_present(a, sizeof(float) * N) == 0);
   d_void *a_dptr = acc_create(a, sizeof(float) * N);

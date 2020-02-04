@@ -30,6 +30,11 @@ public:
   acc_device_t get_device_type() {
     return acc_device_nvidia;
   };
+
+  size_t get_property(int devicenum, acc_device_t devicetype,
+                      acc_device_property_t property);
+  const char * get_property_string(int devicenum, acc_device_t devicetype,
+                                   acc_device_property_t property);
 };
 
 #endif // OARU_CUDA_DEVICE_MANAGER_H_

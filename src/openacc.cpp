@@ -53,3 +53,13 @@ void acc_update_self(h_void *hostPtr, size_t len) {
 int acc_is_present(h_void *hostPtr, size_t len) {
   return devMgt_->is_present(hostPtr, len);
 }
+
+size_t acc_get_property(int devicenum, acc_device_t devicetype,
+                        acc_device_property_t property) {
+  return devMgt_->get_property(devicenum, devicetype, property);
+}
+
+const char * acc_get_property_string(int devicenum, acc_device_t devicetype,
+                                     acc_device_property_t property) {
+  return devMgt_->get_property_string(devicenum, devicetype, property);
+}

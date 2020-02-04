@@ -30,6 +30,11 @@ public:
   virtual int is_present(void *hostPtr, size_t len) = 0;
   virtual void *get_device_ptr(void *hostPtr) = 0;
   virtual acc_device_t get_device_type() = 0;
+  virtual size_t get_property(int devicenum, acc_device_t devicetype,
+                               acc_device_property_t property) = 0;
+  virtual const char * get_property_string(int devicenum, 
+                                           acc_device_t devicetype,
+                                           acc_device_property_t property) = 0;
 };
 
 #endif // OARU_DEVICE_MANAGER_H_

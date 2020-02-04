@@ -244,3 +244,24 @@ void *CudaDeviceManager::get_device_ptr(void *hostPtr) {
   }
   return NULL;
 }
+
+size_t CudaDeviceManager::get_property(int devicenum, acc_device_t devicetype,
+                                       acc_device_property_t property) {
+  int value = 0;
+  if(property == acc_property_memory || property == acc_property_free_memory) {
+    size_t free, total;
+	  cuMemGetInfo(&free, &total);
+    return (property == acc_property_memory) ? total : free;
+  } else if (property == acc_property_shared_memory_support) {
+    cuDeviceGetAttribute(&value,
+                         CU_DEVICE_ATTRIBUTE_MAX_SHARED_MEMORY_PER_BLOCK, 
+                         device_);
+  }
+  return value;
+}
+
+const char * CudaDeviceManager::get_property_string(int devicenum, 
+                                                    acc_device_t devicetype,
+                                                    acc_device_property_t property) {
+  return "";
+}
