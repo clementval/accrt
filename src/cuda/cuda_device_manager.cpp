@@ -3,92 +3,15 @@
 #include <cuda.h>
 #include <iostream>
 
-void print_cuda_error(CUresult cuResult) {
-  switch (cuResult) {
-  case CUDA_SUCCESS:
-    std::cerr << "CUDA_SUCCESS" << std::endl;
-    break;
-  case CUDA_ERROR_INVALID_VALUE:
-    std::cerr << "CUDA_ERROR_INVALID_VALUE" << std::endl;
-    break;
-  case CUDA_ERROR_OUT_OF_MEMORY:
-    std::cerr << "CUDA_ERROR_OUT_OF_MEMORY" << std::endl;
-    break;
-  case CUDA_ERROR_NOT_INITIALIZED:
-    std::cerr << "CUDA_ERROR_NOT_INITIALIZED" << std::endl;
-    break;
-  case CUDA_ERROR_DEINITIALIZED:
-    std::cerr << "CUDA_ERROR_DEINITIALIZED" << std::endl;
-    break;
-  case CUDA_ERROR_NO_DEVICE:
-    std::cerr << "CUDA_ERROR_NO_DEVICE" << std::endl;
-    break;
-  case CUDA_ERROR_INVALID_DEVICE:
-    std::cerr << "CUDA_ERROR_INVALID_DEVICE" << std::endl;
-    break;
-  case CUDA_ERROR_INVALID_IMAGE:
-    std::cerr << "CUDA_ERROR_INVALID_IMAGE" << std::endl;
-    break;
-  case CUDA_ERROR_INVALID_CONTEXT:
-    std::cerr << "CUDA_ERROR_INVALID_CONTEXT" << std::endl;
-    break;
-  case CUDA_ERROR_CONTEXT_ALREADY_CURRENT:
-    std::cerr << "CUDA_ERROR_CONTEXT_ALREADY_CURRENT" << std::endl;
-    break;
-  case CUDA_ERROR_MAP_FAILED:
-    std::cerr << "CUDA_ERROR_MAP_FAILED" << std::endl;
-    break;
-  case CUDA_ERROR_UNMAP_FAILED:
-    std::cerr << "CUDA_ERROR_UNMAP_FAILED" << std::endl;
-    break;
-  case CUDA_ERROR_ARRAY_IS_MAPPED:
-    std::cerr << "CUDA_ERROR_ARRAY_IS_MAPPED" << std::endl;
-    break;
-  case CUDA_ERROR_ALREADY_MAPPED:
-    std::cerr << "CUDA_ERROR_ALREADY_MAPPED" << std::endl;
-    break;
-  case CUDA_ERROR_NO_BINARY_FOR_GPU:
-    std::cerr << "CUDA_ERROR_NO_BINARY_FOR_GPU" << std::endl;
-    break;
-  case CUDA_ERROR_ALREADY_ACQUIRED:
-    std::cerr << "CUDA_ERROR_ALREADY_ACQUIRED" << std::endl;
-    break;
-  case CUDA_ERROR_NOT_MAPPED:
-    std::cerr << "CUDA_ERROR_NOT_MAPPED" << std::endl;
-    break;
-  case CUDA_ERROR_INVALID_SOURCE:
-    std::cerr << "CUDA_ERROR_INVALID_SOURCE" << std::endl;
-    break;
-  case CUDA_ERROR_FILE_NOT_FOUND:
-    std::cerr << "CUDA_ERROR_FILE_NOT_FOUND" << std::endl;
-    break;
-  case CUDA_ERROR_INVALID_HANDLE:
-    std::cerr << "CUDA_ERROR_INVALID_HANDLE" << std::endl;
-    break;
-  case CUDA_ERROR_NOT_FOUND:
-    std::cerr << "CUDA_ERROR_NOT_FOUND" << std::endl;
-    break;
-  case CUDA_ERROR_NOT_READY:
-    std::cerr << "CUDA_ERROR_NOT_READY" << std::endl;
-    break;
-  case CUDA_ERROR_LAUNCH_FAILED:
-    std::cerr << "CUDA_ERROR_LAUNCH_FAILED" << std::endl;
-    break;
-  case CUDA_ERROR_LAUNCH_OUT_OF_RESOURCES:
-    std::cerr << "CUDA_ERROR_LAUNCH_OUT_OF_RESOURCES" << std::endl;
-    break;
-  case CUDA_ERROR_LAUNCH_TIMEOUT:
-    std::cerr << "CUDA_ERROR_LAUNCH_TIMEOUT" << std::endl;
-    break;
-  case CUDA_ERROR_LAUNCH_INCOMPATIBLE_TEXTURING:
-    std::cerr << "CUDA_ERROR_LAUNCH_INCOMPATIBLE_TEXTURING" << std::endl;
-    break;
-  case CUDA_ERROR_UNKNOWN:
-    std::cerr << "CUDA_ERROR_UNKNOWN" << std::endl;
-    break;
-  default:
-    std::cerr << "Unknown error code" << std::endl;
-    break;
+#define cudaErrCheck(ans) { cudaAssert((ans), __FILE__, __LINE__); }
+inline void cudaAssert(CUresult code, const char *file, int line, 
+                       bool abort = true) {
+  if (code != CUDA_SUCCESS) {
+    const char* errstr;
+    cuGetErrorString(code, &errstr);
+    fprintf(stderr,"GPU error: %s %s %d\n", errstr, file, line);
+    if (abort)
+       exit(code);
   }
 }
 
@@ -97,10 +20,7 @@ void print_cuda_error(CUresult cuResult) {
  */
 int CudaDeviceManager::get_num_devices() {
   int deviceCount = 0;
-  CUresult cuResult = cuDeviceGetCount(&deviceCount);
-  if (cuResult != CUDA_SUCCESS) {
-    std::cerr << "[ERROR] Cannot read number of devices" << std::endl;
-  }
+  cudaErrCheck(cuDeviceGetCount(&deviceCount));
   return deviceCount;
 }
 
@@ -108,47 +28,9 @@ int CudaDeviceManager::get_num_devices() {
  *
  */
 void CudaDeviceManager::init() {
-  CUresult cuResult = cuInit(0);
-
-  int major = 0, minor = 0;
-  if (cuResult != CUDA_SUCCESS) {
-    std::cerr << "[ERROR] Cannot call cuInit" << std::endl;
-    exit(1);
-  }
-
-  cuResult = cuDeviceGet(&device_, 0);
-  if (cuResult != CUDA_SUCCESS) {
-    std::cerr << "Error: cannot get device 0" << std::endl;
-    exit(1);
-  }
-
-  // char name[100];
-  // cuResult = cuDeviceGetName(name, 100, device);
-  // std::cout << "> Using device 0: " << name << std::endl;
-
-  // cuResult = cuDeviceGetAttribute(
-  //     &major, CU_DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY_MAJOR, device);
-  // if (cuResult != CUDA_SUCCESS) {
-  //   std::cerr << "Error: cannot get device capabilities" << std::endl;
-  //   exit(1);
-  // }
-
-  // cuResult = cuDeviceGetAttribute(
-  //     &minor, CU_DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY_MINOR, device);
-  // if (cuResult != CUDA_SUCCESS) {
-  //   std::cerr << "[ERROR] Cannot get device capabilities" << std::endl;
-  //   exit(1);
-  // }
-  // std::cout << "> GPU Device has SM " << major << "." << minor <<
-  //     " compute capability" << std::endl;
-
-  cuResult = cuCtxCreate(&context_, 0, device_);
-  if (cuResult != CUDA_SUCCESS) {
-    fprintf(stderr, "* Error initializing the CUDA context.\n");
-    cuCtxDestroy(context_);
-    exit(1);
-  }
-
+  cudaErrCheck(cuInit(0));
+  cudaErrCheck(cuDeviceGet(&device_, 0));
+  cudaErrCheck(cuCtxCreate(&context_, 0, device_));
   presentTable_.clear();
 }
 
@@ -162,33 +44,19 @@ void CudaDeviceManager::destroy() { cuCtxDestroy(context_); }
  */
 void *CudaDeviceManager::allocate(void *hostPtr, size_t size) {
   void *devPtr;
-  CUresult cuResult = CUDA_SUCCESS;
   CUdeviceptr cuPtr;
-  cuResult = cuMemAlloc(&cuPtr, size);
-  if (cuResult == CUDA_SUCCESS) {
-    devPtr = (void *)(uintptr_t)cuPtr;
-    CudaAllocInfo crt = { { hostPtr, devPtr, size }, cuPtr };
-    presentTable_[hostPtr] = crt;
-    return devPtr;
-  } else {
-    std::cerr << "[ERROR] Cannot allocate on device" << std::endl;
-    print_cuda_error(cuResult);
-    exit(1);
-  }
-  return NULL;
+  cudaErrCheck(cuMemAlloc(&cuPtr, size));
+  devPtr = (void *)(uintptr_t)cuPtr;
+  CudaAllocInfo crt = { { hostPtr, devPtr, size }, cuPtr };
+  presentTable_[hostPtr] = crt;
+  return devPtr;
 }
 
 /**
  *
  */
 void CudaDeviceManager::free(void *hostPtr) {
-  CUresult cuResult = CUDA_SUCCESS;
-  cuResult = cuMemFree(presentTable_[hostPtr].cuPtr);
-  if (cuResult != CUDA_SUCCESS) {
-    std::cerr << "[ERROR] Cannot free CUDA memory" << std::endl;
-    print_cuda_error(cuResult);
-    exit(1);
-  }
+  cudaErrCheck(cuMemFree(presentTable_[hostPtr].cuPtr));
   presentTable_.erase(hostPtr);
 }
 
@@ -197,20 +65,12 @@ void CudaDeviceManager::free(void *hostPtr) {
  */
 void CudaDeviceManager::memcpy(void *hostPtr, size_t len,
                                DataMovementDirection direction) {
-  CUresult cuResult = CUDA_SUCCESS;
-
   if (direction == HOST_TO_DEVICE) {
-    cuResult = cuMemcpyHtoD(presentTable_[hostPtr].cuPtr, hostPtr, len);
+    cudaErrCheck(cuMemcpyHtoD(presentTable_[hostPtr].cuPtr, hostPtr, len));
   } else if (direction == DEVICE_TO_HOST) {
-    cuResult = cuMemcpyDtoH(hostPtr, presentTable_[hostPtr].cuPtr, len);
-  }
-
-  if (cuResult != CUDA_SUCCESS) {
-    print_cuda_error(cuResult);
-    exit(1);
+    cudaErrCheck(cuMemcpyDtoH(hostPtr, presentTable_[hostPtr].cuPtr, len));
   }
 }
-
 /**
  *
  */
@@ -250,18 +110,30 @@ size_t CudaDeviceManager::get_property(int devicenum, acc_device_t devicetype,
   int value = 0;
   if(property == acc_property_memory || property == acc_property_free_memory) {
     size_t free, total;
-	  cuMemGetInfo(&free, &total);
+	  cudaErrCheck(cuMemGetInfo(&free, &total));
     return (property == acc_property_memory) ? total : free;
   } else if (property == acc_property_shared_memory_support) {
-    cuDeviceGetAttribute(&value,
-                         CU_DEVICE_ATTRIBUTE_MAX_SHARED_MEMORY_PER_BLOCK, 
-                         device_);
+    cudaErrCheck(cuDeviceGetAttribute(&value,
+        CU_DEVICE_ATTRIBUTE_MAX_SHARED_MEMORY_PER_BLOCK, device_));
   }
   return value;
 }
 
 const char * CudaDeviceManager::get_property_string(int devicenum, 
-                                                    acc_device_t devicetype,
-                                                    acc_device_property_t property) {
+    acc_device_t devicetype, acc_device_property_t property) {
+  CUresult cuResult = CUDA_SUCCESS;
+  char *buf;
+  buf = new char[256];
+  if(property == acc_property_driver) {
+    int version;
+    cudaErrCheck(cuDriverGetVersion(&version));
+    snprintf(buf, 256, "%d", version);
+    return buf;
+  } else if(property == acc_property_name) {
+    cudaErrCheck(cuDeviceGetName (buf, 256, device_));
+    return buf;
+  } else if(property == acc_property_vendor) {
+    return "nvidia";
+  } 
   return "";
 }
